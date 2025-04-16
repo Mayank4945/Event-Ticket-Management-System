@@ -2,120 +2,107 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { BookCatalog } from "@/components/book-catalog"
-import { BookCheckout } from "@/components/book-checkout"
-import { BookReturn } from "@/components/book-return"
-import { MemberManagement } from "@/components/member-management"
-import { Navbar } from "@/components/navbar"
+import { EventCatalog } from "../components/event-catalog"
+import { MyTickets } from "@/components/my-tickets"
+import { UserManagement } from "../components/user-management"
+import { EventManagement } from "../components/event-management"
+import { Dashboard } from "../components/dashboard"
+import { useAuth } from "@/contexts/auth-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAuth } from "@/hooks/use-auth"
+import { Navbar } from "@/components/navbar"
 import { Loader2 } from "lucide-react"
-import { UserBorrowings } from "@/components/user-borrowings"
-import { UserBorrowingHistory } from "@/components/user-borrowing-history"
+import { UserRole } from "@/types"
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("catalog")
-  const { user, isAuthenticated, loading } = useAuth()
+  const [activeTab, setActiveTab] = useState("browse")
   const router = useRouter()
+  const { user, loading, isAuthenticated } = useAuth()
   
-  // Redirect to login if not authenticated
+  // Set the page title
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/auth/login")
-    }
-  }, [loading, isAuthenticated, router])
-  
-  // Show loading state while checking authentication
+    document.title = "Event Ticket Management System"
+  }, [])
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-lg text-foreground/70">Loading...</p>
+      <>
+        <Navbar />
+        <div className="container mx-auto flex items-center justify-center h-[80vh]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
+            <p className="text-lg text-muted-foreground">Loading...</p>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
-  
-  // If not authenticated, don't render anything (redirect will handle it)
-  if (!isAuthenticated) {
-    return null
-  }
-  
-  const isLibrarian = user?.role === "LIBRARIAN"
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          {isLibrarian ? "Library Management System" : "Library Portal"}
-        </h1>
-        
-        {isLibrarian ? (
-          // Librarian view with all tabs
-          <Tabs defaultValue="catalog" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="catalog">Book Catalog</TabsTrigger>
-              <TabsTrigger value="checkout">Checkout</TabsTrigger>
-              <TabsTrigger value="return">Return</TabsTrigger>
-              {/* <TabsTrigger value="members">Members</TabsTrigger> */}
-            </TabsList>
+      <main className="flex-1 container mx-auto p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">
+            {isAuthenticated ? `Welcome, ${user?.name}` : "Welcome to Event Ticket System"}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {isAuthenticated 
+              ? "Manage your tickets and browse upcoming events" 
+              : "Find and book tickets for the best events in your area"}
+          </p>
+        </div>
 
-            <TabsContent value="catalog" className="mt-6">
-              <BookCatalog />
+        <Tabs defaultValue="browse" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-8">
+            <TabsTrigger value="browse">Browse Events</TabsTrigger>
+            {isAuthenticated && <TabsTrigger value="tickets">My Tickets</TabsTrigger>}
+            {isAuthenticated && user?.role === UserRole.ADMIN && (
+              <TabsTrigger value="users">Manage Users</TabsTrigger>
+            )}
+            {isAuthenticated && (user?.role === UserRole.ADMIN || user?.role === UserRole.ORGANIZER) && (
+              <TabsTrigger value="events">Manage Events</TabsTrigger>
+            )}
+            {isAuthenticated && user?.role === UserRole.ADMIN && (
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="browse">
+            <EventCatalog />
+          </TabsContent>
+
+          {isAuthenticated && (
+            <TabsContent value="tickets">
+              <MyTickets />
             </TabsContent>
+          )}
 
-            <TabsContent value="checkout" className="mt-6">
-              <BookCheckout />
+          {isAuthenticated && user?.role === UserRole.ADMIN && (
+            <TabsContent value="users">
+              <UserManagement />
             </TabsContent>
+          )}
 
-            <TabsContent value="return" className="mt-6">
-              <BookReturn />
+          {isAuthenticated && (user?.role === UserRole.ADMIN || user?.role === UserRole.ORGANIZER) && (
+            <TabsContent value="events">
+              <EventManagement />
             </TabsContent>
+          )}
 
-            {/* <TabsContent value="members" className="mt-6">
-              <MemberManagement />
-            </TabsContent> */}
-          </Tabs>
-        ) : (
-          // Member view with limited tabs
-          <Tabs defaultValue="catalog" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="catalog">Book Catalog</TabsTrigger>
-              <TabsTrigger value="myborrowing">My Borrowings</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="catalog" className="mt-6">
-              <BookCatalog />
+          {isAuthenticated && user?.role === UserRole.ADMIN && (
+            <TabsContent value="dashboard">
+              <Dashboard />
             </TabsContent>
-
-            <TabsContent value="myborrowing" className="mt-6">
-              {user && user.role === "MEMBER" && (
-                <Tabs defaultValue="borrowing" className="mt-6">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="borrowing">My Borrowings</TabsTrigger>
-                    <TabsTrigger value="history">Borrowing History</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="borrowing" className="mt-4">
-                    <UserBorrowings />
-                  </TabsContent>
-                  <TabsContent value="history" className="mt-4">
-                    <UserBorrowingHistory />
-                  </TabsContent>
-                </Tabs>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
-        
-        {/* Welcome message */}
-        {user && (
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            Welcome, {user.name}! You are logged in as a {user.role === "LIBRARIAN" ? "Librarian" : "Member"}.
-          </div>
-        )}
-      </div>
-    </main>
+          )}
+        </Tabs>
+      </main>
+      <footer className="border-t py-6 md:py-0">
+        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
+          <p className="text-sm text-muted-foreground text-center md:text-left">
+            &copy; {new Date().getFullYear()} Event Ticket Management System. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
   )
 }

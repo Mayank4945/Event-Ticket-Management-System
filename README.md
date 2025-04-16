@@ -1,4 +1,4 @@
-# Library_Management_System
+# Event_Ticket_Management_System
 backend directory
 
 mvn spring-boot:run

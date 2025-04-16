@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Library Management System",
-  description: "A modern library management system",
+  title: "Event Ticket Management System",
+  description: "A modern system for managing event tickets",
 }
 
 export default function RootLayout({

@@ -1,72 +1,126 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { createContext, useContext, useEffect, useState } from "react"
+import { User, UserRole } from "@/types"
 
-type User = {
-  id: string
-  name: string
-  email: string
-  role: "MEMBER" | "LIBRARIAN"
-}
-
-type AuthContextType = {
+export interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (user: User) => Promise<void>
-  logout: () => Promise<void>
   isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<boolean>
+  logout: () => void
+  register: (name: string, email: string, password: string, phone: string) => Promise<boolean>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  isAuthenticated: false,
+  login: async () => false,
+  logout: () => {},
+  register: async () => false,
+})
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  // Load user from local storage on initial load
+  
+  // Check for existing session on load
   useEffect(() => {
-    const loadUser = () => {
+    const checkAuth = async () => {
       try {
-        const storedUser = localStorage.getItem("lms_user")
+        // Check if we have user data in localStorage
+        const storedUser = localStorage.getItem("user")
         if (storedUser) {
-          console.log("Loaded user from localStorage:", storedUser)
           setUser(JSON.parse(storedUser))
-        } else {
-          console.log("No user found in localStorage")
         }
       } catch (error) {
-        console.error("Failed to parse stored user:", error)
-        localStorage.removeItem("lms_user")
+        console.error("Auth check error:", error)
       } finally {
         setLoading(false)
       }
     }
+    
+    checkAuth()
+  }, [])
   
-    // Delay just a bit to ensure client hydration
-    setTimeout(loadUser, 0)
-  }, [])
-
-  const login = useCallback(async (userData: User) => {
-    setUser(userData)
-    localStorage.setItem("lms_user", JSON.stringify(userData))
-  }, [])
-
-  const logout = useCallback(async () => {
+  // Login function - for demo will check against data seeder credentials
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // For demo purposes, we'll simulate authentication with the data seeder credentials
+      if (password !== "password") {
+        return false
+      }
+      
+      let userData: User | null = null
+      
+      if (email === "admin@example.com") {
+        userData = {
+          id: "1",
+          name: "Admin User",
+          email: "admin@example.com",
+          role: UserRole.ADMIN,
+          status: "ACTIVE"
+        }
+      } else if (email === "organizer@example.com") {
+        userData = {
+          id: "2",
+          name: "Event Organizer",
+          email: "organizer@example.com",
+          role: UserRole.ORGANIZER,
+          status: "ACTIVE"
+        }
+      } else if (email === "customer@example.com") {
+        userData = {
+          id: "3",
+          name: "John Customer",
+          email: "customer@example.com",
+          role: UserRole.CUSTOMER,
+          status: "ACTIVE"
+        }
+      }
+      
+      if (userData) {
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(userData))
+        setUser(userData)
+        return true
+      }
+      
+      return false
+    } catch (error) {
+      console.error("Login error:", error)
+      return false
+    }
+  }
+  
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem("user")
     setUser(null)
-    localStorage.removeItem("lms_user")
-    router.push("/auth/login")
-  }, [router])
-
+  }
+  
+  // Register function (in real app, would call API)
+  const register = async (name: string, email: string, password: string, phone: string): Promise<boolean> => {
+    try {
+      // In a real app, you would make an API call to register the user
+      // For demo, we'll just simulate a successful registration
+      return true
+    } catch (error) {
+      console.error("Registration error:", error)
+      return false
+    }
+  }
+  
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
+        isAuthenticated: !!user,
         login,
         logout,
-        isAuthenticated: !!user,
+        register
       }}
     >
       {children}
@@ -74,10 +128,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
+export const useAuth = () => useContext(AuthContext)

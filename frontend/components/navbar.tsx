@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
-import { BookOpen, LogOut, Menu, User, LogIn, UserPlus, Book, BookCheck, BookX, BarChart, Moon, Sun } from "lucide-react"
+import { Ticket, LogOut, Menu, User, LogIn, UserPlus, Calendar, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import {
   Sheet,
@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { UserRole } from "@/types"
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth()
@@ -34,8 +35,8 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <BookOpen className="h-6 w-6" />
-            <span className="font-bold text-xl">Library System</span>
+            <Ticket className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">EventTicket</span>
           </Link>
         </div>
         
@@ -43,27 +44,22 @@ export function Navbar() {
           <Link href="/" className="text-foreground hover:text-foreground/80">
             Home
           </Link>
-          <Link href="/books" className="text-foreground hover:text-foreground/80">
-            Books
+          <Link href="/events" className="text-foreground hover:text-foreground/80">
+            Events
           </Link>
-          
-          {isAuthenticated && (user?.role === "LIBRARIAN" || user?.role === "MEMBER") && (
-            <>
-              <Link href="/checkout" className="text-foreground hover:text-foreground/80">
-                Checkout
-              </Link>
-              <Link href="/return" className="text-foreground hover:text-foreground/80">
-                Return
-              </Link>
-            </>
+          <Link href="/venues" className="text-foreground hover:text-foreground/80">
+            Venues
+          </Link>
+          {isAuthenticated && (
+            <Link href="/my-tickets" className="text-foreground hover:text-foreground/80">
+              My Tickets
+            </Link>
           )}
           
-          {isAuthenticated && user?.role === "LIBRARIAN" && (
-            <>
-              <Link href="/reports" className="text-foreground hover:text-foreground/80">
-                Reports
-              </Link>
-            </>
+          {isAuthenticated && (user?.role === UserRole.ADMIN || user?.role === UserRole.ORGANIZER) && (
+            <Link href="/dashboard" className="text-foreground hover:text-foreground/80">
+              Dashboard
+            </Link>
           )}
         </div>
         
@@ -72,7 +68,9 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <User className="h-5 w-5" />
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10 text-primary">
+                    {user?.name?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -84,11 +82,9 @@ export function Navbar() {
                   <Link href="/profile">My Profile</Link>
                 </DropdownMenuItem>
 
-                {user?.role === "MEMBER" && (
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/membership/manage">Manage Membership</Link>
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/my-tickets">My Tickets</Link>
+                </DropdownMenuItem>
                 
                 <DropdownMenuItem onClick={toggleTheme} className="justify-between px-2 cursor-pointer">
                   <span className="flex items-center">
@@ -116,13 +112,73 @@ export function Navbar() {
                 </Link>
               </Button>
               <Button asChild>
-                <Link href="/membership">
+                <Link href="/auth/signup">
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Register
+                  Sign Up
                 </Link>
               </Button>
             </div>
           )}
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Event Ticket System</SheetTitle>
+              </SheetHeader>
+              <div className="grid gap-4 py-4">
+                <Link href="/" className="block py-2 hover:text-primary">
+                  Home
+                </Link>
+                <Link href="/events" className="block py-2 hover:text-primary">
+                  Events
+                </Link>
+                <Link href="/venues" className="block py-2 hover:text-primary">
+                  Venues
+                </Link>
+                {isAuthenticated && (
+                  <>
+                    <Link href="/my-tickets" className="block py-2 hover:text-primary">
+                      My Tickets
+                    </Link>
+                    <Link href="/profile" className="block py-2 hover:text-primary">
+                      My Profile
+                    </Link>
+                    {(user?.role === UserRole.ADMIN || user?.role === UserRole.ORGANIZER) && (
+                      <Link href="/dashboard" className="block py-2 hover:text-primary">
+                        Dashboard
+                      </Link>
+                    )}
+                    <Button variant="outline" onClick={logout} className="w-full">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </>
+                )}
+                {!isAuthenticated && (
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" asChild>
+                      <Link href="/auth/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                      </Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/auth/signup">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

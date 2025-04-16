@@ -21,6 +21,32 @@ export enum AccountStatus {
   NONE = "NONE",
 }
 
+export enum TicketType {
+  STANDARD = "STANDARD",
+  VIP = "VIP",
+  PREMIUM = "PREMIUM",
+  EARLY_BIRD = "EARLY_BIRD"
+}
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  CANCELED = "CANCELED",
+  REFUNDED = "REFUNDED"
+}
+
+export enum UserRole {
+  ADMIN = "ADMIN",
+  ORGANIZER = "ORGANIZER",
+  CUSTOMER = "CUSTOMER"
+}
+
+export enum UserStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  BLOCKED = "BLOCKED"
+}
+
 export interface BookItem {
   barcode: string
   isReferenceOnly?: boolean
@@ -79,15 +105,6 @@ export interface BookReservation {
   memberId: string
 }
 
-export interface BookLending {
-  id: string
-  creationDate: string
-  dueDate: string
-  returnDate?: string
-  bookItemBarcode: string
-  memberId: string
-}
-
 export interface Fine {
   id: string
   creationDate: string
@@ -95,5 +112,68 @@ export interface Fine {
   bookItemBarcode: string
   memberId: string
   paymentDate?: string
+}
+
+export interface User {
+  id: string
+  name: string
+  email: string
+  password?: string
+  phone: string
+  address?: Address
+  role: UserRole
+  registrationDate: string
+  status: UserStatus
+}
+
+export interface Venue {
+  id: string
+  name: string
+  address: Address
+  capacity: number
+  description: string
+  imageUrl: string
+}
+
+export interface Event {
+  id: string
+  title: string
+  description: string
+  eventDate: string
+  endDate: string
+  venueId: string
+  organizerId: string
+  imageUrl: string
+  categories: string[]
+  published: boolean
+  totalSeats: number
+  availableSeats: number
+  basePrice: number
+  venue?: Venue
+}
+
+export interface Ticket {
+  id: string
+  eventId: string
+  orderId: string
+  userId: string
+  type: TicketType
+  price: number
+  ticketNumber: string
+  used: boolean
+  purchaseDate: string
+  event?: Event
+}
+
+export interface Order {
+  id: string
+  userId: string
+  ticketIds: string[]
+  totalAmount: number
+  status: OrderStatus
+  orderDate: string
+  paymentMethod: string
+  transactionId: string
+  tickets?: Ticket[]
 }
 
