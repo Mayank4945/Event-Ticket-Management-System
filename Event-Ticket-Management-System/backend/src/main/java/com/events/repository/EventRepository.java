@@ -10,8 +10,8 @@ public interface EventRepository extends MongoRepository<Event, String> {
     List<Event> findByEventDateAfter(Date date);
     List<Event> findByPublishedTrue();
     List<Event> findByTitleContaining(String title);
-    List<Event> findByCategory(String category);
-    List<Event> findByVenue(String venueId);
+    List<Event> findByCategoriesContaining(String category);
+    List<Event> findByVenueId(String venueId);  // Changed from findByVenue to findByVenueId
     List<Event> findByCreatedAtAfter(Date date);
     List<Event> findByEventDateBetweenOrderByEventDateAsc(Date startDate, Date endDate);
 }

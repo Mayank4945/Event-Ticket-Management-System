@@ -15,7 +15,16 @@ public class EventService {
     private EventRepository eventRepository;
     
     public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+        try {
+            System.out.println("Fetching all events from repository...");
+            List<Event> events = eventRepository.findAll();
+            System.out.println("Successfully retrieved " + events.size() + " events");
+            return events;
+        } catch (Exception e) {
+            System.err.println("ERROR fetching events in service layer: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to let controller handle it
+        }
     }
     
     public List<Event> getPublishedEvents() {
@@ -63,9 +72,9 @@ public class EventService {
         if (title != null && !title.isEmpty()) {
             return eventRepository.findByTitleContaining(title);
         } else if (category != null && !category.isEmpty()) {
-            return eventRepository.findByCategory(category);
+            return eventRepository.findByCategoriesContaining(category);
         } else if (venueId != null && !venueId.isEmpty()) {
-            return eventRepository.findByVenue(venueId);
+            return eventRepository.findByVenueId(venueId);
         }
         
         return eventRepository.findByEventDateAfter(java.util.Date.from(LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toInstant()));

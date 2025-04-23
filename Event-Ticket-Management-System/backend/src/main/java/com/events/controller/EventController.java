@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/events")
@@ -17,12 +19,19 @@ public class EventController {
     private EventService eventService;
     
     @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents(
-            @RequestParam(required = false) String organizerId) {
-        if (organizerId != null && !organizerId.isEmpty()) {
-            return ResponseEntity.ok(eventService.getEventsByOrganizerId(organizerId));
+    public ResponseEntity<Object> getAllEvents() {
+        try {
+            List<Event> events = eventService.getAllEvents();
+            System.out.println("EventController: Successfully retrieved " + events.size() + " events");
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            System.err.println("ERROR in EventController.getAllEvents: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            error.put("error", e.getClass().getName());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
-        return ResponseEntity.ok(eventService.getAllEvents());
     }
     
     @GetMapping("/{id}")

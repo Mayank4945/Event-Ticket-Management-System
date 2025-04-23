@@ -6,6 +6,7 @@ D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\even
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\repository\OrderRepository.java
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\service\EventService.java
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\model\UserRole.java
+D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\controller\HealthController.java
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\model\Venue.java
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\service\VenueService.java
 D:\Event-Ticketing\Event-Ticket-Management-System\backend\src\main\java\com\events\config\CorsConfig.java
